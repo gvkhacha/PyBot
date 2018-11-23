@@ -42,8 +42,9 @@ class MyClient(discord.Client):
             else:
                 # only considers one-word info requests - "!info c plus plus" would not work
                 topic = topic_sep[1]
-                msg = '\n'.join(self.resources.get_urls(topic))
+                msg = '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)])
                 await client.send_message(message.channel, content=(msg))
+
 
 client = MyClient()
 client.run(TOKEN)
