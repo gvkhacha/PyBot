@@ -61,7 +61,11 @@ class Resources(object):
         self.load_file()
 
     def get_urls(self, target: str) -> [str]:
-        return self.resources.get(target.lower(), [])
+        """ 
+        Returns the list of urls associated with {target}
+        May raise KeyError if target does not exist.
+        """
+        return self.resources[target.lower()]
 
     def get_keys(self) -> [str]:
         """ Returns a list of all the keys (representing topics) """

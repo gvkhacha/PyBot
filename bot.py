@@ -35,15 +35,37 @@ class MyClient(discord.Client):
             await client.send_message(message.channel, content=(f"Hello! {message.author.mention}"))
 
         if message.content.startswith("!info"):
-            topic_sep = message.content.split()
-            if len(topic_sep) == 1:
-                # user only said !info or !infopython and will not work
-                return
+            fields = message.content.split()
+
+            if len(fields) == 1:
+                # user only said !info or no spaces "!infopython" and will not work
+                msg = 'I can give you some information depending on the topics available.\nHere are the available topics:\n'
+                msg += 'Ask for a topic by saying \"!info {topic}\"\n```'
+                msg += '\n'.join(self.resources.get_keys())
+                await client.send_message(message.channel, content=(msg + '```'))
+
             else:
-                # only considers one-word info requests - "!info c plus plus" would not work
-                topic = topic_sep[1]
-                msg = '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)])
-                await client.send_message(message.channel, content=(msg))
+                if fields[1] == "add":
+                    # Possible change - Making sure user has permission to add urls to resource list
+                    if len(fields) != 4:
+                        # Not correct number of parameters
+                        await client.send_message(message.channel, content=('To add a URL resource to our topics, use the following command:\n\t"!info add {topic} {url}"'))
+                        return
+                    if not self.resources.add_url(fields[2], fields[3]):
+                        # add_url wasn't able to confirm that url was in the right format
+                        await client.send_message(message.channel, content=("That is not a valid URL!"))
+                        return
+                    await client.send_message(message.channel, content=("Thank you for your contribution."))
+                else:
+                    topic = fields[1]
+                    msg = f"Here are some resources for {topic}\n\n"
+                    try:
+                        msg += '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)[:5]])
+                        await client.send_message(message.channel, content=(msg))
+                    except KeyError:
+                        await client.send_message(message.channel, content=('That topic does not exist. If you wish to start the list of resources, use the following command:\n\t"!info add {topic} {url}"'))
+
+
 
 
 client = MyClient()
