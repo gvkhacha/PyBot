@@ -4,7 +4,7 @@
 import json
 import discord
 from discord.ext import commands
-from resources import get_dictionary, search_dictionary
+from resources import Resources
 
 # Ignore the following commented out code. Mods are discussing how we will handle hosting and the bot's token.
 
@@ -24,19 +24,26 @@ class MyClient(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
+        self.resources = Resources()
 
-    # If a user types !hello the bot will respond with 'Hello! (nameOfUser here)'
     async def on_message(self, message):
-
-        if message.author == self.user:
+        # we do not want the bot to reply to itself
+        if message.author.id == self.user.id:
             return
 
-        if message.content.startswith('!hello'):
-            await client.send_message(message.channel, content = (f'Hello! {message.author.mention}')
+        if message.content.startswith("!hello"):
+            await client.send_message(message.channel, content=(f"Hello! {message.author.mention}"))
 
-    @bot.command()
-    asynd def info(ctx):
-
+        if message.content.startswith("!info"):
+            topic_sep = message.content.split()
+            if len(topic_sep) == 1:
+                # user only said !info or !infopython and will not work
+                return
+            else:
+                # only considers one-word info requests - "!info c plus plus" would not work
+                topic = topic_sep[1]
+                msg = '\n'.join(self.resources.get_urls(topic))
+                await client.send_message(message.channel, content=(msg))
 
 client = MyClient()
 client.run(TOKEN)
