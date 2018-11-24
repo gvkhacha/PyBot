@@ -1,3 +1,4 @@
+
 # PyBot
 A Discord Bot built with [discord.py](https://github.com/Rapptz/discord.py/tree/rewrite), Custom for our server, for learning python.
 
@@ -18,6 +19,18 @@ Once you find a feature, issue, bug, etc that you'd like to tackle:
   * Create a Pull Request on this repo and code reviewers will take it from there!
 
 To find a way to contribute, visit the project tied to this repo. Your guideline to understanding the project will be under the 'Project' heading down below!
+
+### Local Testing
+To make sure your contributions work before pushing them onto the life repository, make sure you test on a private server/Discord development mode.
+
+To be able to run the files, make sure you use Python 3.6 and [discord.py](https://github.com/Rapptz/discord.py/tree/rewrite). You may use Python virtual environments with [pipenv](https://github.com/pypa/pipenv), as Pipfiles have been provided.
+
+```
+pipenv shell
+```
+
+To create a Discord Application for this bot, head over to [Discord Developer's Portal](https://discordapp.com/developers/applications/) and create an application, and a bot. From there, copy the bot's token and save it to a file called token.txt in the main directory. You can use OAuth found under the Application to add the bot to a server. 
+
 
 ### Project
   The project hosts 3 columns:
