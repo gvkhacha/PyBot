@@ -3,6 +3,12 @@ import json
 import shutil
 import os # used for deleting json when restoring from backup
 
+HELP_TEXT = 'I can give you some information depending on the topics available.\nHere are the available topics:\
+            \nAsk for a topic by saying "!info [topic]"\n```{urls}```\n\
+            \nTo add a URL resource to our topics, use the following command:\n\t"!info add [topic] [url]"'
+
+INVALID_TOPIC_TEXT = 'That topic does not exist. If you wish to start the list of resources, use the following command:\
+            \n\t"!info add [topic] [url]"'
 
 
 class Resources(object):
@@ -70,3 +76,9 @@ class Resources(object):
     def get_keys(self) -> [str]:
         """ Returns a list of all the keys (representing topics) """
         return [k.capitalize() for k in self.resources.keys()]
+
+    def get_help_text(self) -> str:
+        return HELP_TEXT.format(urls='\n'.join(self.get_keys()))
+
+    def get_invalid_text(self) -> str:
+        return INVALID_TOPIC_TEXT

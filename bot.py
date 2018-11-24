@@ -5,7 +5,6 @@ import json
 import discord
 from discord.ext import commands
 from resources import Resources
-
 # Ignore the following commented out code. Mods are discussing how we will handle hosting and the bot's token.
 
 # cacheJSON = 'json/cache.json'
@@ -28,9 +27,9 @@ class MyClient(discord.Client):
 
 
     def check_info_reaction(self, reaction, user):
-        if user == self.user:
-            return False
-        return True
+        """ Predicate used in wait_for_reaction. Bot only cares about
+        reactions from anyone except the bot."""
+        return user != self.user
 
     async def on_message(self, message):
         # we do not want the bot to reply to itself
@@ -45,35 +44,37 @@ class MyClient(discord.Client):
 
             if len(fields) == 1:
                 # user only said !info or no spaces "!infopython" and will not work
-                msg = 'I can give you some information depending on the topics available.\nHere are the available topics:\n'
-                msg += 'Ask for a topic by saying \"!info {topic}\"\n```'
-                msg += '\n'.join(self.resources.get_keys())
-                await client.send_message(message.channel, content=(msg + '```'))
+                await client.send_message(message.channel, content=self.resources.get_help_text())
 
             else:
                 if fields[1] == "add":
                     # Possible change - Making sure user has permission to add urls to resource list
                     if len(fields) != 4:
                         # Not correct number of parameters
-                        await client.send_message(message.channel, content=('To add a URL resource to our topics, use the following command:\n\t"!info add {topic} {url}"'))
+                        await client.send_message(message.channel, content=self.resources.get_help_text())
                         return
                     if not self.resources.add_url(fields[2], fields[3]):
                         # add_url wasn't able to confirm that url was in the right format
-                        await client.send_message(message.channel, content=("That is not a valid URL!"))
+                        await client.add_reaction(message, '😡')
                         return
-                    await client.send_message(message.channel, content=("Thank you for your contribution."))
+                    await client.add_reaction(message, '😍')
                 else:
                     topic = fields[1]
-                    msg = f"Here are some resources for {topic}\n\n"
+                    msg_topic = f"Here are some resources for {topic}\n\n"
                     try:
-                        msg += '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)[:5]])
-                        bot_message = await client.send_message(message.channel, content=(msg))
-                        await client.add_reaction(bot_message, '👍')
-                        react = await client.wait_for_reaction(['👍', '👎'], message=bot_message, check=self.check_info_reaction)
-                        await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(react))
-                    except KeyError:
-                        await client.send_message(message.channel, content=('That topic does not exist. If you wish to start the list of resources, use the following command:\n\t"!info add {topic} {url}"'))
+                        urls = self.resources.get_urls(topic)
+                        msg = '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)[:5]])
+                        msg += "\nReact to this message to get the full list Private Message'd to you!"
+                        bot_message = await client.send_message(message.channel, content=(msg_topic + msg))
 
+                        # Add reaction and wait for any other reaction
+                        await client.add_reaction(bot_message, '📚')
+                        react = await client.wait_for_reaction(['📚'], message=bot_message, check=self.check_info_reaction)
+
+
+                        await client.send_message(react.user, content=msg_topic + '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)]))
+                    except KeyError:
+                        await client.send_message(message.channel, content=self.resources.get_invalid_text())
 
 
 client = MyClient()
