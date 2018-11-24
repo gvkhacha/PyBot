@@ -2,7 +2,10 @@
 # Python v3.6
 
 import discord
+import re
 from discord.ext import commands
+import projectslist
+from projectslist import ProjectInfo
 # Ignore the following commented out code. Mods are discussing how we will handle hosting and the bot's token.
 
 # cacheJSON = 'json/cache.json'
@@ -15,11 +18,6 @@ from discord.ext import commands
 # except FileNotFoundError:
 #     pass
 
-def extract_github_urls(channel: str, message: str) -> [(str, str)]:
-    """ Given a single message from project_lists, finds
-    projects that matches original {channel} and returns a 
-    2-tuple  (project, url) """
-    print(message.content)
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -29,15 +27,18 @@ class MyClient(discord.Client):
         print('------')
         self.project_channel = client.get_channel("515799506231492610")
 
-    async def extract_github_urls(self, channel:str) -> [(str, str)]:
+    async def extract_project_info(self) -> [(str, str)]:
         links = []
         async for log in client.logs_from(self.project_channel):
-            if f"<#{channel}>" in log.content:
-                fields = log.content.split("\n")
-                for f in fields:
-                    if f.startswith("**Github"):
-                        links.append((fields[0], f.split()[-1]))
-                        break
+            try:
+                text = str(log.content)
+                title = re.findall(r"\*\*([^:]+)\*\*\n", text)[0]
+                channel_id = re.findall(r"<#(\d+)>", text)[0]
+                url = re.findall(r"\*\* (\S+github\S+)\n", text)[0]
+                links.append(ProjectInfo(title, channel_id, url))
+            except AttributeError:
+                pass
+
         return links
 
     async def on_message(self, message):
@@ -48,9 +49,23 @@ class MyClient(discord.Client):
         if message.content.startswith("!hello"):
             await client.send_message(message.channel, content=(f"Hello! {message.author.mention}"))
 
+
         if message.content.startswith("!github"):
-            links = await self.extract_github_urls(message.channel.id)
-            msg = "\n".join(["{0}: {1}".format(project, url) for project, url in links])
+            all_links = await self.extract_project_info()
+            fields = message.content.split()
+            if len(fields) > 1:
+                if (fields[-1].lower() == "help"):
+                    await client.send_message(message.channel, content='Usage:\n\t"!github" in a channel where a project exists.\n\t"!github [project_name]" otherwise')
+                    return
+                # user has asked for a specific project, try to search it
+                links = projectslist.get_by_name(fields[-1], all_links)
+            else:
+                # get the project that is assigned with users channel
+                links = projectslist.get_by_channel(message.channel.id, all_links)
+            if len(links) < 1:
+                await client.add_reaction(message, '😡')
+                return
+            msg = "\n".join(["{0}: {1}".format(project, url) for project, _, url in links])
             await client.send_message(message.channel, content=msg)
 
 
