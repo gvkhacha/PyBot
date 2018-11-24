@@ -76,6 +76,5 @@ class MyClient(discord.Client):
                     except KeyError:
                         await client.send_message(message.channel, content=self.resources.get_invalid_text())
 
-
 client = MyClient()
 client.run(TOKEN)
