@@ -26,6 +26,12 @@ class MyClient(discord.Client):
         print('------')
         self.resources = Resources()
 
+
+    def check_info_reaction(self, reaction, user):
+        if user == self.user:
+            return False
+        return True
+
     async def on_message(self, message):
         # we do not want the bot to reply to itself
         if message.author.id == self.user.id:
@@ -61,10 +67,12 @@ class MyClient(discord.Client):
                     msg = f"Here are some resources for {topic}\n\n"
                     try:
                         msg += '\n'.join([f"<{u}>" for u in self.resources.get_urls(topic)[:5]])
-                        await client.send_message(message.channel, content=(msg))
+                        bot_message = await client.send_message(message.channel, content=(msg))
+                        await client.add_reaction(bot_message, '👍')
+                        react = await client.wait_for_reaction(['👍', '👎'], message=bot_message, check=self.check_info_reaction)
+                        await client.send_message(message.channel, '{0.user} reacted with {0.reaction.emoji}!'.format(react))
                     except KeyError:
                         await client.send_message(message.channel, content=('That topic does not exist. If you wish to start the list of resources, use the following command:\n\t"!info add {topic} {url}"'))
-
 
 
 
