@@ -6,7 +6,8 @@ name = "pypi"
 [dev-packages]
 
 [packages]
-"discord.py" = "*"
+discord-rewrite = "*"
+yarl = "<1.2"
 
 [requires]
 python_version = "3.6"
