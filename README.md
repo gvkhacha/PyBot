@@ -26,8 +26,15 @@ To make sure your contributions work before pushing them onto the life repositor
 To be able to run the files, make sure you use Python 3.6 and [discord.py](https://github.com/Rapptz/discord.py/tree/rewrite). You may use Python virtual environments with [pipenv](https://github.com/pypa/pipenv), as Pipfiles have been provided.
 
 ```
+pipenv install
 pipenv shell
+python bot.py
 ```
+
+If you wish to install the modules using pip/PyPi, use the following:
+  * discord-rewrite
+  * yarl<1.2
+
 
 To create a Discord Application for this bot, head over to [Discord Developer's Portal](https://discordapp.com/developers/applications/) and create an application, and a bot. From there, copy the bot's token and save it to a file called token.txt in the main directory. You can use OAuth found under the Application to add the bot to a server. 
 
